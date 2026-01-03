@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Donations</title>
+
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+  <style>
+    :root {
+      --pink-bg:#fce7f3;
+      --pink-btn:#db2777;
+      --pink-title:#be185d;
+      --border:#d1d5db;
+    }
+
+    * { box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,"Segoe UI",Arial;
+      background:var(--pink-bg);
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+    }
+
+    .container{
+      width:100%;
+      max-width:520px;
+      background:#fff;
+      padding:36px 32px;
+      border-radius:16px;
+      box-shadow:0 18px 40px rgba(0,0,0,.12);
+    }
+
+    h2{
+      text-align:center;
+      font-size:32px;
+      margin-bottom:28px;
+      color:var(--pink-title);
+    }
+
+    label{
+      display:block;
+      font-size:16px;
+      margin-bottom:8px;
+      color:#374151;
+    }
+
+    input,select{
+      width:100%;
+      height:52px;
+      padding:0 14px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      font-size:16px;
+      margin-bottom:22px;
+    }
+
+    input:focus,select:focus{
+      outline:none;
+      border-color:var(--pink-btn);
+      box-shadow:0 0 0 2px rgba(219,39,119,.15);
+    }
+
+    button{
+      width:100%;
+      height:54px;
+      font-size:18px;
+      font-weight:600;
+      background:var(--pink-btn);
+      color:#fff;
+      border:none;
+      border-radius:12px;
+      cursor:pointer;
+    }
+
+    button:disabled{
+      background:#9ca3af;
+      cursor:not-allowed;
+    }
+
+    .footer{
+      margin-top:22px;
+      text-align:center;
+      font-size:14px;
+      color:#6b7280;
+    }
+
+    /* FULLSCREEN STATES */
+    .overlay{
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      background:#dcfce7;
+    }
+
+    .box{
+      background:#fff;
+      padding:44px 36px;
+      border-radius:18px;
+      text-align:center;
+      max-width:480px;
+      width:100%;
+      box-shadow:0 20px 45px rgba(0,0,0,.18);
+    }
+
+    .box h1{
+      font-size:34px;
+      color:#15803d;
+      margin-top:0;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- FORM -->
+<div id="donationForm" class="container">
+  <h2>Donations</h2>
+
+  <label>Name *</label>
+  <input id="name" type="text" required>
+
+  <label>Email *</label>
+  <input id="email" type="email" placeholder="you@example.com" required>
+
+  <label>Mobile (India) *</label>
+  <input id="mobile"
+         type="text"
+         inputmode="numeric"
+         maxlength="10"
+         placeholder="10 digit mobile"
+         required>
+
+  <label>Gender *</label>
+  <select id="gender" required>
+    <option value="">Select gender</option>
+    <option value="MALE">Male</option>
+    <option value="FEMALE">Female</option>
+    <option value="OTHER">Other</option>
+  </select>
+
+  <label>Amount (₹)</label>
+  <input id="amount" type="number" min="1" value="1">
+
+  <button id="payBtn" onclick="donate()" disabled>Pay Securely</button>
+  <div class="footer">Powered by Razorpay</div>
+</div>
+
+<!-- PROCESSING -->
+<div id="processing" class="overlay">
+  <div class="box">
+    <h1>Processing Payment…</h1>
+    <p>Please wait, do not refresh.</p>
+  </div>
+</div>
+
+<!-- THANK YOU -->
+<div id="thankYou" class="overlay">
+  <div class="box">
+    <h1>Thank You 💚</h1>
+    <p>Your donation was successful.</p>
+    <p>A certificate has been emailed to you.</p>
+    <button onclick="location.reload()">Donate Again</button>
+  </div>
+</div>
+
+<script>
+  let razorpayKey=null;
+  let processing=false;
+
+  window.onload=()=>{
+    fetch("/api/payments/config")
+      .then(r=>r.json())
+      .then(c=>{
+        razorpayKey=c.razorpayKeyId;
+        payBtn.disabled=false;
+      });
+  };
+
+  function donate(){
+    if(processing) return;
+
+    const name=nameEl().value.trim();
+    const email=emailEl().value.trim();
+    const mobile=mobileEl().value.trim();
+    const gender=genderEl().value;
+    const amount=parseInt(amountEl().value);
+
+    if(!name) return alert("Name is required");
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      return alert("Enter a valid email");
+    if(!/^[6-9]\d{9}$/.test(mobile))
+      return alert("Enter valid Indian mobile");
+    if(!gender) return alert("Select gender");
+    if(!amount || amount<1)
+      return alert("Minimum donation is ₹1");
+
+    processing=true;
+    payBtn.disabled=true;
+
+    fetch("/api/donations/pay",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({name,email,mobile,gender,amount})
+    })
+    .then(r=>r.json())
+    .then(openCheckout)
+    .catch(()=>{
+      processing=false;
+      payBtn.disabled=false;
+      alert("Failed to initiate payment");
+    });
+  }
+
+  function openCheckout(data){
+    const options={
+      key:razorpayKey,
+      order_id:data.razorpayOrderId,
+      amount:data.amount*100,
+      currency:data.currency,
+      name:"JALIB CODES",
+      prefill:{
+        name:nameEl().value,
+        email:emailEl().value,
+        contact:mobileEl().value
+      },
+      handler:verifyPayment,
+      modal:{
+        ondismiss:()=>{
+          processing=false;
+          payBtn.disabled=false;
+        }
+      }
+    };
+    new Razorpay(options).open();
+  }
+
+  function verifyPayment(res){
+    donationForm.style.display="none";
+    processingDiv().style.display="flex";
+
+    fetch("/api/payments/verify",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        razorpayPaymentId:res.razorpay_payment_id,
+        razorpayOrderId:res.razorpay_order_id,
+        razorpaySignature:res.razorpay_signature
+      })
+    })
+    .then(()=>{
+      processingDiv().style.display="none";
+      thankYouDiv().style.display="flex";
+    })
+    .catch(()=>{
+      alert("Payment verification failed");
+      location.reload();
+    });
+  }
+
+  /* helpers */
+  const nameEl=()=>document.getElementById("name");
+  const emailEl=()=>document.getElementById("email");
+  const mobileEl=()=>document.getElementById("mobile");
+  const genderEl=()=>document.getElementById("gender");
+  const amountEl=()=>document.getElementById("amount");
+  const processingDiv=()=>document.getElementById("processing");
+  const thankYouDiv=()=>document.getElementById("thankYou");
+</script>
+
+</body>
+</html>

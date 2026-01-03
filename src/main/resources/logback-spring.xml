@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- Console appender (MANDATORY) -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Email send log file -->
+    <appender name="EMAIL_FILE"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/email_send_logs.log</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/email_send_logs.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} | %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- ROOT LOGGER (THIS FIXES YOUR CRASH) -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+    <!-- Dedicated email logger -->
+    <logger name="EMAIL_LOGGER" level="INFO" additivity="false">
+        <appender-ref ref="EMAIL_FILE"/>
+    </logger>
+
+</configuration>
