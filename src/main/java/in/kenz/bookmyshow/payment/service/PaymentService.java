@@ -10,6 +10,8 @@ import in.kenz.bookmyshow.payment.entity.Payment;
 import in.kenz.bookmyshow.payment.enums.PaymentStatus;
 import in.kenz.bookmyshow.payment.gateway.RazorpayGatewayService;
 import in.kenz.bookmyshow.payment.repository.PaymentRepository;
+import in.kenz.bookmyshow.booking.repository.BookingRepository;
+import in.kenz.bookmyshow.booking.service.BookingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,6 +36,8 @@ public class PaymentService {
     private final RazorpayGatewayService razorpayGatewayService;
     private final DonationRepository donationRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final BookingRepository bookingRepository;
+    private final BookingService bookingService;
 
 
     @Value("${razorpay.key-secret}")
@@ -106,20 +110,21 @@ public class PaymentService {
         payment.setCompletedAt(LocalDateTime.now());
         paymentRepository.save(payment);
 
-        // 3. Update donation
-        Donation donation = donationRepository
-                .findByPaymentId(payment.getId())
-                .orElseThrow(() ->
-                        new IllegalStateException("Donation not found for payment"));
-        log.info("DONATION PAYMENT VERIFIED, EVENT PUBLISHED: {}", donation.getId());
-        donation.setDonationStatus(DonationStatus.SUCCESS);
-        donation.setDonatedAt(LocalDateTime.now());
-        donationRepository.save(donation);
+        // 3. Attempt to resolve donation (existing flow)
+        donationRepository.findByPaymentId(payment.getId()).ifPresent(donation -> {
+            log.info("DONATION PAYMENT VERIFIED, EVENT PUBLISHED: {}", donation.getId());
+            donation.setDonationStatus(DonationStatus.SUCCESS);
+            donation.setDonatedAt(LocalDateTime.now());
+            donationRepository.save(donation);
+            eventPublisher.publishEvent(new DonationPaidEvent(donation.getId()));
+        });
 
-        // ✅ 4. Publish event AFTER success
-        eventPublisher.publishEvent(
-                new DonationPaidEvent(donation.getId())
-        );
+        // 4. Attempt to resolve a booking associated with this payment (new flow)
+        bookingRepository.findByPaymentInternalId(payment.getId()).ifPresent(booking -> {
+            log.info("BOOKING PAYMENT VERIFIED: {} -> marking booking as paid", booking.getId());
+            // mark booking as paid via bookingService
+            bookingService.payBooking(booking.getShowId(), booking.getId(), payment.getGatewayPaymentId());
+        });
     }
     //helper for verifyRazorpayPayment()
     private String hmacSha256(String data, String secret) {

@@ -14,7 +14,7 @@ public class PaymentConfigController {
     @Value("${razorpay.key-id}")
     private String razorpayKeyId;
 
-    @GetMapping("/api/payments/config")
+    @GetMapping("/payments/config")
     public Map<String, String> getPaymentConfig() {
         return Map.of(
                 "razorpayKeyId", razorpayKeyId

@@ -2,8 +2,8 @@ package in.kenz.bookmyshow.user.service.impl;
 
 import in.kenz.bookmyshow.common.exception.DuplicateResourceException;
 import in.kenz.bookmyshow.common.exception.ResourceNotFoundException;
-import in.kenz.bookmyshow.user.dto.SignupRequest;
-import in.kenz.bookmyshow.user.dto.UpdateRequest;
+import in.kenz.bookmyshow.user.dto.CreateUserRequest;
+import in.kenz.bookmyshow.user.dto.UpdateUserRequest;
 import in.kenz.bookmyshow.user.entity.User;
 import in.kenz.bookmyshow.user.enums.ProfileStatus;
 import in.kenz.bookmyshow.user.event.UserCreatedEvent;
@@ -37,21 +37,21 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public User createUser(SignupRequest signupRequest) {
-        if (userRepository.existsByUsername(signupRequest.getUsername())) {
+    public User createUser(CreateUserRequest createUserRequest) {
+        if (userRepository.existsByUsername(createUserRequest.getUsername())) {
             throw new DuplicateResourceException("Username is already in use");
         }
 
-        if (userRepository.existsByEmail(signupRequest.getEmail())) {
+        if (userRepository.existsByEmail(createUserRequest.getEmail())) {
             throw new DuplicateResourceException("Username is already in use");
         }
 
 
         User user = User.builder()
-                .name(signupRequest.getName())
-                .username(signupRequest.getUsername())
-                .password(signupRequest.getPassword())
-                .email(signupRequest.getEmail())
+                .name(createUserRequest.getName())
+                .username(createUserRequest.getUsername())
+                .password(createUserRequest.getPassword())
+                .email(createUserRequest.getEmail())
                 .build();
         userRepository.save(user);
         // 🔔 Trigger email event
@@ -71,7 +71,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Transactional
-    public User updateUser(UUID userId, UpdateRequest request) {
+    public User updateUser(UUID userId, UpdateUserRequest request) {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));

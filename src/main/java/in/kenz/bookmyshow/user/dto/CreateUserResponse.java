@@ -1,14 +1,17 @@
 package in.kenz.bookmyshow.user.dto;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Getter
 @Setter
-public class SignupRequest {
+@Builder
+public class CreateUserResponse {
+    private UUID id;
     private String name;
     private String username;
-    private String password;
     private String email;
-
 }

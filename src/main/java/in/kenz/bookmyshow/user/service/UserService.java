@@ -1,7 +1,7 @@
 package in.kenz.bookmyshow.user.service;
 
-import in.kenz.bookmyshow.user.dto.SignupRequest;
-import in.kenz.bookmyshow.user.dto.UpdateRequest;
+import in.kenz.bookmyshow.user.dto.CreateUserRequest;
+import in.kenz.bookmyshow.user.dto.UpdateUserRequest;
 import in.kenz.bookmyshow.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,9 +11,9 @@ import java.util.UUID;
 
 @Service
 public interface UserService {
-    User createUser(SignupRequest signupRequest);
+    User createUser(CreateUserRequest createUserRequest);
     User fetchUser(UUID userId);
-    User updateUser(UUID userId, UpdateRequest request);
+    User updateUser(UUID userId, UpdateUserRequest request);
     Page<User> fetchAllUsers(Pageable usersListPageable);
     User deactivateUser(UUID userId);
     User activateUser(UUID userId);

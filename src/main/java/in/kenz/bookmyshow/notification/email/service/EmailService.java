@@ -1,12 +1,15 @@
 package in.kenz.bookmyshow.notification.email.service;
 
+import in.kenz.bookmyshow.booking.entity.Booking;
 import in.kenz.bookmyshow.donation.entity.Donation;
 import in.kenz.bookmyshow.notification.email.entity.EmailTemplate;
 import in.kenz.bookmyshow.notification.email.enums.EmailTemplateCode;
 import in.kenz.bookmyshow.notification.email.repository.EmailTemplateRepository;
+import in.kenz.bookmyshow.show.repository.ShowRepository;
 import in.kenz.bookmyshow.theatre.event.TheatreCreatedEvent;
 import in.kenz.bookmyshow.theatre.event.TheatreProfileUpdatedEvent;
 import in.kenz.bookmyshow.user.event.UserProfileUpdatedEvent;
+import in.kenz.bookmyshow.show.entity.Show;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -29,6 +32,7 @@ public class EmailService {
     private final EmailTemplateRepository templateRepository;
     private final JavaMailSender mailSender;
     private final TemplateEngine templateEngine;
+    private final ShowRepository showRepository;
 
     //from email
     @Value("${spring.mail.username}")
@@ -103,8 +107,6 @@ public class EmailService {
 
         send(to, subject, body, template.isHtml());
     }
-
-
 
 
 
@@ -300,7 +302,62 @@ public class EmailService {
         send(event.getNewEmail(), subject, body, template.isHtml());
     }
 
+    public void sendBookingTicketEmail(String to, String name, Booking booking, byte[] pdfBytes) {
+        MimeMessage message = mailSender.createMimeMessage();
 
+        try {
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
+            // Try to load template from MongoDB
+            EmailTemplate template = templateRepository
+                    .findByIdAndEnabledTrue("BOOKING_TICKET")
+                    .orElse(null);
+
+            Context context = new Context();
+            context.setVariable("name", name);
+            context.setVariable("bookingId", booking.getId());
+            context.setVariable("seatNumber", booking.getSeatNumber());
+            context.setVariable("amount", booking.getAmount());
+
+            // attempt to load show details
+            try {
+                showRepository.findById(booking.getShowId()).ifPresent(show -> {
+                    context.setVariable("screenName", show.getScreenName());
+                    context.setVariable("showStart", show.getStartTime().format(DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a")));
+                    context.setVariable("showEnd", show.getEndTime().format(DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a")));
+                });
+            } catch (Exception ignored) {
+            }
+
+            String subject;
+            String body;
+
+            if (template != null) {
+                subject = templateEngine.process(template.getSubject(), context);
+                body = templateEngine.process(template.getBody(), context);
+                helper.setText(body, template.isHtml());
+                helper.setSubject(subject);
+            } else {
+                // fallback to simple subject/body
+                subject = "Your Ticket - Booking " + booking.getId();
+                body = templateEngine.process("booking-ticket", context);
+                helper.setSubject(subject);
+                helper.setText(body, true);
+            }
+
+            helper.setFrom(senderEmail, senderName);
+            helper.setTo(to);
+
+            helper.addAttachment("ticket.pdf", new ByteArrayResource(pdfBytes));
+
+            mailSender.send(message);
+
+            EMAIL_LOGGER.info("BOOKING_TICKET_EMAIL_SENT | TO={} | BOOKING={}", to, booking.getId());
+
+        } catch (Exception ex) {
+            EMAIL_LOGGER.error("BOOKING_TICKET_EMAIL_FAILED | BOOKING={}", booking.getId(), ex);
+            throw new IllegalStateException("Failed to send booking ticket email", ex);
+        }
+    }
 
 }

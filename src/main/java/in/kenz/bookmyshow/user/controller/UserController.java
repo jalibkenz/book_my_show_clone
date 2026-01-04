@@ -1,11 +1,10 @@
 package in.kenz.bookmyshow.user.controller;
 
 import in.kenz.bookmyshow.common.dto.CommonResponse;
-import in.kenz.bookmyshow.theatre.entity.Theatre;
-import in.kenz.bookmyshow.user.dto.SignupRequest;
-import in.kenz.bookmyshow.user.dto.SignupResponse;
-import in.kenz.bookmyshow.user.dto.UpdateRequest;
-import in.kenz.bookmyshow.user.dto.UpdateResponse;
+import in.kenz.bookmyshow.user.dto.CreateUserRequest;
+import in.kenz.bookmyshow.user.dto.CreateUserResponse;
+import in.kenz.bookmyshow.user.dto.UpdateUserRequest;
+import in.kenz.bookmyshow.user.dto.UpdateUserResponse;
 import in.kenz.bookmyshow.user.entity.User;
 import in.kenz.bookmyshow.user.mapper.UserMapper;
 import in.kenz.bookmyshow.user.service.UserService;
@@ -34,28 +33,28 @@ public class UserController {
 
     @PostMapping("/me/create")
     @Operation(summary = "createUser")
-    public ResponseEntity<CommonResponse<SignupResponse>> createUser(@RequestBody SignupRequest signupRequest) {
+    public ResponseEntity<CommonResponse<CreateUserResponse>> createUser(@RequestBody CreateUserRequest createUserRequest) {
 
-        User user = userService.createUser(signupRequest);
+        User user = userService.createUser(createUserRequest);
 
-        SignupResponse signupResponse = userMapper.toSignupResponse(user);
+        CreateUserResponse createUserResponse = userMapper.toSignupResponse(user);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(CommonResponse.success(signupResponse));
+                .body(CommonResponse.success(createUserResponse));
     }
 
     @GetMapping("/me/{userId}")
     @Operation(summary = "fetchUser")
-    public ResponseEntity<CommonResponse<UpdateResponse>> fetchUser(@PathVariable UUID userId) {
+    public ResponseEntity<CommonResponse<UpdateUserResponse>> fetchUser(@PathVariable UUID userId) {
 
         User user = userService.fetchUser(userId);
-        UpdateResponse updateResponse = userMapper.toUpdateResponse(user);
+        UpdateUserResponse updateUserResponse = userMapper.toUpdateResponse(user);
 
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(CommonResponse.success(updateResponse));
+                .body(CommonResponse.success(updateUserResponse));
     }
 
 
@@ -63,14 +62,14 @@ public class UserController {
 
     @PatchMapping("/me/{userId}")
     @Operation(summary = "updateUser")
-    public ResponseEntity<CommonResponse<UpdateResponse>> updateUser(@PathVariable UUID userId, @RequestBody UpdateRequest updateRequest) {
+    public ResponseEntity<CommonResponse<UpdateUserResponse>> updateUser(@PathVariable UUID userId, @RequestBody UpdateUserRequest updateUserRequest) {
 
         // Here you would typically have logic to handle the session or authorization, but for now we use the path variable.
-        User user = userService.updateUser(userId, updateRequest);
+        User user = userService.updateUser(userId, updateUserRequest);
 
 
 
-        UpdateResponse updateResponse = UpdateResponse.builder()
+        UpdateUserResponse updateUserResponse = UpdateUserResponse.builder()
                 .name(user.getName())
                 .username(user.getUsername())
                 .email(user.getEmail())
@@ -83,7 +82,7 @@ public class UserController {
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(CommonResponse.success(updateResponse));
+                .body(CommonResponse.success(updateUserResponse));
     }
 
 
