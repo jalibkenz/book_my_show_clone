@@ -1,12 +1,10 @@
-package in.kenz.bookmyshow.user.entity;
+package in.kenz.bookmyshow.theatre.entity;
 
-import in.kenz.bookmyshow.user.enums.ProfileStatus;
-import in.kenz.bookmyshow.user.enums.UserRole;
+import in.kenz.bookmyshow.theatre.enums.ProfileStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.DynamicUpdate;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -15,28 +13,29 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "users")
+@Table(name = "theatres")
 @DynamicUpdate
-public class User {
+public class Theatre {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     private String name;
-    private String username;
-    private String password;
+    private String Address;
+
+    private String city;
+    private String state;
+    private String country;
+
     private String email;
     private String mobile;
 
-    @Enumerated(EnumType.STRING)
-    private UserRole roles;
 
     @Enumerated(EnumType.STRING)
     private ProfileStatus profileStatus;
 
+
     private String emergencyContactName;
     private String emergencyContactEmail;
     private String emergencyContactMobile;
-
-    private LocalDateTime deletedAt;
 }

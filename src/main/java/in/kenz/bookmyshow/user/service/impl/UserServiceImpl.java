@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -199,7 +200,8 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        user.setProfileStatus(ProfileStatus.SOFT_DELETED);
+        user.setProfileStatus(ProfileStatus.DELETED);
+        user.setDeletedAt(LocalDateTime.now());
         return user;
     }
 

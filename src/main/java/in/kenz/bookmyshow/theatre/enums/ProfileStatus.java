@@ -1,4 +1,4 @@
-package in.kenz.bookmyshow.user.enums;
+package in.kenz.bookmyshow.theatre.enums;
 
 public enum ProfileStatus {
     ACTIVE,

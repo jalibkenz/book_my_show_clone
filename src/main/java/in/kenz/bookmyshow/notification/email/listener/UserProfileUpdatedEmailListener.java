@@ -19,7 +19,7 @@ public class UserProfileUpdatedEmailListener {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handle(UserProfileUpdatedEvent event) {
-        log.info("UserProfileUpdatedEvent received AFTER_COMMIT for {}", event.getEmail());
+        log.info("TheatreProfileUpdatedEvent received AFTER_COMMIT for {}", event.getEmail());
         emailService.sendUserProfileUpdatedMail(
                 event
 

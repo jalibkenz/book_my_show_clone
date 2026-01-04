@@ -1,6 +1,7 @@
 package in.kenz.bookmyshow.user.controller;
 
 import in.kenz.bookmyshow.common.dto.CommonResponse;
+import in.kenz.bookmyshow.theatre.entity.Theatre;
 import in.kenz.bookmyshow.user.dto.SignupRequest;
 import in.kenz.bookmyshow.user.dto.SignupResponse;
 import in.kenz.bookmyshow.user.dto.UpdateRequest;
@@ -37,12 +38,7 @@ public class UserController {
 
         User user = userService.createUser(signupRequest);
 
-        SignupResponse signupResponse = SignupResponse.builder()
-                .id(user.getId())
-                .name(user.getName())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .build();
+        SignupResponse signupResponse = userMapper.toSignupResponse(user);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -71,6 +67,8 @@ public class UserController {
 
         // Here you would typically have logic to handle the session or authorization, but for now we use the path variable.
         User user = userService.updateUser(userId, updateRequest);
+
+
 
         UpdateResponse updateResponse = UpdateResponse.builder()
                 .name(user.getName())

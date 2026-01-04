@@ -4,6 +4,8 @@ import in.kenz.bookmyshow.donation.entity.Donation;
 import in.kenz.bookmyshow.notification.email.entity.EmailTemplate;
 import in.kenz.bookmyshow.notification.email.enums.EmailTemplateCode;
 import in.kenz.bookmyshow.notification.email.repository.EmailTemplateRepository;
+import in.kenz.bookmyshow.theatre.event.TheatreCreatedEvent;
+import in.kenz.bookmyshow.theatre.event.TheatreProfileUpdatedEvent;
 import in.kenz.bookmyshow.user.event.UserProfileUpdatedEvent;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -208,6 +210,95 @@ public class EmailService {
         }
     }
 
+
+    public void sendTheatreCreatedEmail(TheatreCreatedEvent event) {
+
+        EMAIL_LOGGER.info("EMAIL SERVICE ENTERED(sendTheatreCreatedEmail) for {}", event.getEmail());
+
+        EmailTemplate template = templateRepository
+                .findByIdAndEnabledTrue(EmailTemplateCode.THEATRE_CREATED.name())
+                .orElseThrow(() ->
+                        new IllegalStateException("Email template THEATRE_CREATED not found"));
+
+        Context context = new Context();
+
+        // Theatre details (FULL)
+        context.setVariable("name", event.getName());
+        context.setVariable("city", event.getCity());
+        context.setVariable("state", event.getState());
+        context.setVariable("country", event.getCountry());
+        context.setVariable("email", event.getEmail());
+        context.setVariable("mobile", event.getMobile());
+        context.setVariable(
+                "timestamp",
+                LocalDateTime.now()
+                        .format(DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a"))
+        );
+
+        String subject = templateEngine.process(template.getSubject(), context);
+        String body = templateEngine.process(template.getBody(), context);
+
+        send(event.getEmail(), subject, body, template.isHtml());
+    }
+
+    public void sendTheatreProfileUpdatedEmail(TheatreProfileUpdatedEvent event) {
+
+        EMAIL_LOGGER.info(
+                "EMAIL SERVICE ENTERED(sendTheatreProfileUpdatedEmail) for {}",
+                event.getNewEmail()
+        );
+
+        EmailTemplate template = templateRepository
+                .findByIdAndEnabledTrue(EmailTemplateCode.THEATRE_UPDATED.name())
+                .orElseThrow(() ->
+                        new IllegalStateException("Email template THEATRE_UPDATED not found"));
+
+        Context context = new Context();
+
+        context.setVariable("nameOld", event.getOldName());
+        context.setVariable("nameNew", event.getNewName());
+
+        context.setVariable("addressOld", event.getOldAddress());
+        context.setVariable("addressNew", event.getNewAddress());
+
+        context.setVariable("cityOld", event.getOldCity());
+        context.setVariable("cityNew", event.getNewCity());
+
+        context.setVariable("stateOld", event.getOldState());
+        context.setVariable("stateNew", event.getNewState());
+
+        context.setVariable("countryOld", event.getOldCountry());
+        context.setVariable("countryNew", event.getNewCountry());
+
+        context.setVariable("emailOld", event.getOldEmail());
+        context.setVariable("emailNew", event.getNewEmail());
+
+        context.setVariable("mobileOld", event.getOldMobile());
+        context.setVariable("mobileNew", event.getNewMobile());
+
+        context.setVariable("profileStatusOld", event.getOldProfileStatus());
+        context.setVariable("profileStatusNew", event.getNewProfileStatus());
+
+        context.setVariable("emergencyContactNameOld", event.getOldEmergencyContactName());
+        context.setVariable("emergencyContactNameNew", event.getNewEmergencyContactName());
+
+        context.setVariable("emergencyContactEmailOld", event.getOldEmergencyContactEmail());
+        context.setVariable("emergencyContactEmailNew", event.getNewEmergencyContactEmail());
+
+        context.setVariable("emergencyContactMobileOld", event.getOldEmergencyContactMobile());
+        context.setVariable("emergencyContactMobileNew", event.getNewEmergencyContactMobile());
+
+        context.setVariable(
+                "timestamp",
+                LocalDateTime.now()
+                        .format(DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a"))
+        );
+
+        String subject = templateEngine.process(template.getSubject(), context);
+        String body = templateEngine.process(template.getBody(), context);
+
+        send(event.getNewEmail(), subject, body, template.isHtml());
+    }
 
 
 
