@@ -1,8 +1,7 @@
-2026-01-04 21:52:56 | Sender email resolved as jalibcodes@gmail.com
-2026-01-04 21:52:56 | EMAIL SERVICE ENTERED(sendUserCreatedMail) for kenz@yahoo.com
-2026-01-04 21:53:00 | EMAIL_SENT | TO=kenz@yahoo.com | SUBJECT=Welcome Jalib, Your profile has been CREATED 💖
-2026-01-04 21:53:52 | Sender email resolved as jalibcodes@gmail.com
-2026-01-04 21:53:52 | EMAIL SERVICE ENTERED(sendUserCreatedMail) for kenz@yahoo.com
-2026-01-04 21:53:56 | EMAIL_SENT | TO=kenz@yahoo.com | SUBJECT=Welcome Jalib, Your profile has been CREATED 💖
-2026-01-04 21:58:02 | EMAIL SERVICE ENTERED(sendTheatreCreatedEmail) for jalibkenz@hotmail.com
-2026-01-04 21:58:06 | EMAIL_SENT | TO=jalibkenz@hotmail.com | SUBJECT=🎬 Theatre Created Successfully - Apsara
+2026-01-05 00:09:38 | Sender email resolved as jalibcodes@gmail.com
+2026-01-05 00:09:38 | EMAIL SERVICE ENTERED(sendUserCreatedMail) for jalibism@gmail.com
+2026-01-05 00:09:42 | EMAIL_SENT | TO=jalibism@gmail.com | SUBJECT=Welcome Jalib, Your profile has been CREATED 💖
+2026-01-05 00:13:18 | EMAIL SERVICE ENTERED(sendTheatreCreatedEmail) for jalibkenz@hotmail.com
+2026-01-05 00:13:24 | EMAIL_SENT | TO=jalibkenz@hotmail.com | SUBJECT=🎬 Theatre Created Successfully - Apsara
+2026-01-05 01:07:55 | BOOKING_TICKET_EMAIL_SENT | TO=jalibism@gmail.com | BOOKING=0fe33ede-9363-4804-a6c8-29bf6bddcb11
+2026-01-05 01:11:49 | BOOKING_TICKET_EMAIL_SENT | TO=jalibism@gmail.com | BOOKING=630b7643-ea7c-4fce-ab2c-cb8d7d61205b

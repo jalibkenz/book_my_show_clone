@@ -5,7 +5,7 @@ import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfWriter;
 import in.kenz.bookmyshow.booking.entity.Booking;
 import in.kenz.bookmyshow.booking.service.TicketService;
-import in.kenz.bookmyshow.show.entity.Show;
+import in.kenz.bookmyshow.screenandseat.entity.Show;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;

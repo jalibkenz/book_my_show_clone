@@ -177,17 +177,28 @@
   let processing=false;
 
   window.onload=()=>{
-    fetch("/api/payments/config")
-      .then(r=>r.json())
+    const backendUrl = window.location.port === "63342" ? "http://localhost:8080" : "";
+    fetch(`${backendUrl}/payments/config`)
+      .then(async r => {
+        if (!r.ok) {
+          const txt = await r.text();
+          throw new Error(txt || "Server error");
+        }
+        return r.json();
+      })
       .then(c=>{
         razorpayKey=c.razorpayKeyId;
-        payBtn.disabled=false;
+        document.getElementById("payBtn").disabled=false;
+      })
+      .catch(err => {
+        console.error("Failed to load payment config:", err);
       });
   };
 
   function donate(){
     if(processing) return;
 
+    const backendUrl = window.location.port === "63342" ? "http://localhost:8080" : "";
     const name=nameEl().value.trim();
     const email=emailEl().value.trim();
     const mobile=mobileEl().value.trim();
@@ -206,21 +217,28 @@
     processing=true;
     payBtn.disabled=true;
 
-    fetch("/api/donations/pay",{
+    fetch(`${backendUrl}/donations/pay`,{
       method:"POST",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify({name,email,mobile,gender,amount})
     })
-    .then(r=>r.json())
-    .then(openCheckout)
-    .catch(()=>{
+    .then(async r => {
+      if (!r.ok) {
+        const txt = await r.text();
+        throw new Error(txt || "Server error");
+      }
+      return r.json();
+    })
+    .then((data) => openCheckout(data, backendUrl))
+    .catch((err)=>{
       processing=false;
       payBtn.disabled=false;
-      alert("Failed to initiate payment");
+      console.error(err);
+      alert("Failed to initiate payment: " + err.message);
     });
   }
 
-  function openCheckout(data){
+  function openCheckout(data, backendUrl){
     const options={
       key:razorpayKey,
       order_id:data.razorpayOrderId,
@@ -232,7 +250,7 @@
         email:emailEl().value,
         contact:mobileEl().value
       },
-      handler:verifyPayment,
+      handler: (res) => verifyPayment(res, backendUrl),
       modal:{
         ondismiss:()=>{
           processing=false;
@@ -243,11 +261,11 @@
     new Razorpay(options).open();
   }
 
-  function verifyPayment(res){
+  function verifyPayment(res, backendUrl){
     donationForm.style.display="none";
     processingDiv().style.display="flex";
 
-    fetch("/api/payments/verify",{
+    fetch(`${backendUrl}/payments/verify`,{
       method:"POST",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify({
@@ -256,12 +274,16 @@
         razorpaySignature:res.razorpay_signature
       })
     })
-    .then(()=>{
+    .then(async response => {
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Verification failed");
+      }
       processingDiv().style.display="none";
       thankYouDiv().style.display="flex";
     })
-    .catch(()=>{
-      alert("Payment verification failed");
+    .catch((err)=>{
+      alert("Payment verification failed: " + err.message);
       location.reload();
     });
   }

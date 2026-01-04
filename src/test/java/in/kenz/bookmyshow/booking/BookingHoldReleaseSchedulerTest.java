@@ -4,10 +4,11 @@ import in.kenz.bookmyshow.booking.entity.Booking;
 import in.kenz.bookmyshow.booking.enums.BookingShowSeatStatus;
 import in.kenz.bookmyshow.booking.repository.BookingRepository;
 import in.kenz.bookmyshow.booking.scheduler.BookingHoldReleaseScheduler;
-import in.kenz.bookmyshow.seat.entity.Seat;
-import in.kenz.bookmyshow.seat.repository.SeatRepository;
+import in.kenz.bookmyshow.screenandseat.entity.Seat;
+import in.kenz.bookmyshow.screenandseat.repository.SeatRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import java.time.OffsetDateTime;
@@ -16,6 +17,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class BookingHoldReleaseSchedulerTest {
 
     @Autowired

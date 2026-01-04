@@ -95,7 +95,8 @@ public class PaymentService {
                 razorpayKeySecret
         );
 
-        if (!generatedSignature.equals(request.getRazorpaySignature())) {
+        if (!generatedSignature.equalsIgnoreCase(request.getRazorpaySignature())) {
+            log.error("Signature verification failed. Expected: {}, Received: {}", generatedSignature, request.getRazorpaySignature());
             throw new IllegalStateException("Payment signature verification failed");
         }
 

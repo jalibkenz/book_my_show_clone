@@ -3,13 +3,13 @@ package in.kenz.bookmyshow.booking.controller;
 import in.kenz.bookmyshow.booking.dto.InitiateBookingPaymentResponse;
 import in.kenz.bookmyshow.booking.entity.Booking;
 import in.kenz.bookmyshow.booking.repository.BookingRepository;
-import in.kenz.bookmyshow.booking.service.BookingService;
 import in.kenz.bookmyshow.payment.service.PaymentService;
 import in.kenz.bookmyshow.payment.entity.Payment;
 import in.kenz.bookmyshow.booking.service.TicketService;
 import in.kenz.bookmyshow.notification.email.service.EmailService;
-import in.kenz.bookmyshow.show.repository.ShowRepository;
+import in.kenz.bookmyshow.screenandseat.repository.ShowRepository;
 import in.kenz.bookmyshow.user.repository.UserRepository;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,8 +17,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/bookings/{bookingId}")
+@RequestMapping("/bookings")
 @RequiredArgsConstructor
+@Tag(name = "Booking Module")
+@CrossOrigin
 public class BookingPaymentController {
 
     private final BookingRepository bookingRepository;
@@ -28,7 +30,7 @@ public class BookingPaymentController {
     private final ShowRepository showRepository;
     private final UserRepository userRepository;
 
-    @PostMapping("/pay/initiate")
+    @PostMapping("/{bookingId}/pay/initiate")
     public ResponseEntity<InitiateBookingPaymentResponse> initiatePayment(@PathVariable UUID bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
@@ -53,7 +55,7 @@ public class BookingPaymentController {
         return ResponseEntity.status(201).body(res);
     }
 
-    @PostMapping("/resend-ticket")
+    @PostMapping("/{bookingId}/resend-ticket")
     public ResponseEntity<Void> resendTicket(@PathVariable UUID bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Booking not found"));

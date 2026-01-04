@@ -4,6 +4,7 @@ import in.kenz.bookmyshow.booking.dto.CreateBookingRequest;
 import in.kenz.bookmyshow.booking.dto.PayBookingRequest;
 import in.kenz.bookmyshow.booking.service.BookingService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,13 +14,15 @@ import jakarta.validation.Valid;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/shows/{showId}/bookings")
+@RequestMapping("/bookings")
 @RequiredArgsConstructor
+@Tag(name = "Booking Module")
+@CrossOrigin
 public class BookingController {
 
     private final BookingService bookingService;
 
-    @PostMapping
+    @PostMapping("/shows/{showId}")
     @Operation(summary = "bookSeat")
     public ResponseEntity<UUID> bookSeat(
             @PathVariable UUID showId,
@@ -29,7 +32,7 @@ public class BookingController {
         return ResponseEntity.status(HttpStatus.CREATED).body(bookingId);
     }
 
-    @PostMapping("/{bookingId}/pay")
+    @PostMapping("/{bookingId}/shows/{showId}/pay")
     @Operation(summary = "payBooking")
     public ResponseEntity<Void> payBooking(
             @PathVariable UUID showId,

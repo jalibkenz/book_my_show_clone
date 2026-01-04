@@ -26,16 +26,18 @@ Key endpoints
 Theatre / internal (listings)
 - GET /theatres/{theatreId}/shows
 - GET /theatres/{theatreId}/shows/{showId}/seats
-- GET /shows/{showId}/seats
+- GET /seats/shows/{showId}
 - POST /shows  (create show)
 
 Public / customer (booking)
 - GET /theatres/{theatreId}/shows
-- GET /shows/{showId}/seats
-- POST /shows/{showId}/bookings  -> create hold, returns bookingId
-- POST /bookings/{bookingId}/pay  -> confirm payment and finalize booking
-- GET /bookings/{bookingId}       -> get booking status/details
-- GET /payments/config            -> returns public payment config
+- GET /theatres/{theatreId}/shows/{showId}/seats
+- GET /seats/shows/{showId}
+- POST /bookings/shows/{showId}      -> create hold, returns bookingId
+- POST /payments/bookings/{bookingId}/pay -> confirm payment and finalize booking
+- GET /bookings/{bookingId}          -> get booking status/details
+- GET /payments/config               -> returns public payment config
+- POST /payments/verify              -> verify Razorpay signature
 
 Quick create-show example
 ```bash
@@ -57,13 +59,13 @@ curl -X POST http://localhost:8080/shows \
 Hold (book) and pay flow
 ```bash
 # 1. Hold a seat (creates HELD booking)
-curl -X POST http://localhost:8080/shows/<SHOW_ID>/bookings \
+curl -X POST http://localhost:8080/bookings/shows/<SHOW_ID> \
  -H "Content-Type: application/json" \
  -d '{"userId":"33333333-3333-3333-3333-333333333333","seatNumber":"A1"}'
 # response: bookingId (uuid)
 
 # 2. Confirm payment
-curl -X POST http://localhost:8080/bookings/<BOOKING_ID>/pay \
+curl -X POST http://localhost:8080/payments/bookings/<BOOKING_ID>/pay \
  -H "Content-Type: application/json" \
  -d '{"paymentId":"razorpay_payment_abc123"}'
 ```

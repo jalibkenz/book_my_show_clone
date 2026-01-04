@@ -4,6 +4,7 @@ import in.kenz.bookmyshow.donation.dto.CreateDonationRequest;
 import in.kenz.bookmyshow.donation.dto.DonationPaymentResponse;
 import in.kenz.bookmyshow.donation.service.DonationService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -11,8 +12,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/donations")
+@RequestMapping("/donations")
 @RequiredArgsConstructor
+@Tag(name = "Donation Module")
+@CrossOrigin
 public class DonationController {
 
     private final DonationService donationService;

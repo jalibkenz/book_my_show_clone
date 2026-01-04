@@ -1,13 +1,13 @@
 package in.kenz.bookmyshow.booking.service.impl;
 
-import in.kenz.bookmyshow.seat.entity.Seat;
+import in.kenz.bookmyshow.screenandseat.entity.Seat;
 import in.kenz.bookmyshow.booking.entity.Booking;
 import in.kenz.bookmyshow.booking.enums.BookingShowSeatStatus;
-import in.kenz.bookmyshow.seat.repository.SeatRepository;
+import in.kenz.bookmyshow.screenandseat.repository.SeatRepository;
 import in.kenz.bookmyshow.booking.repository.BookingRepository;
 import in.kenz.bookmyshow.booking.service.BookingService;
-import in.kenz.bookmyshow.show.entity.Show;
-import in.kenz.bookmyshow.show.repository.ShowRepository;
+import in.kenz.bookmyshow.screenandseat.entity.Show;
+import in.kenz.bookmyshow.screenandseat.repository.ShowRepository;
 import in.kenz.bookmyshow.booking.service.TicketService;
 import in.kenz.bookmyshow.user.repository.UserRepository;
 import in.kenz.bookmyshow.notification.email.service.EmailService;
@@ -88,6 +88,14 @@ public class BookingServiceImpl implements BookingService {
             throw new IllegalArgumentException("Booking does not belong to the provided show");
         }
 
+        if (booking.getStatus() == BookingShowSeatStatus.BOOKED) {
+            if (paymentId != null && paymentId.equals(booking.getPaymentId())) {
+                // already processed
+                return;
+            }
+            throw new IllegalStateException("Booking is already in BOOKED state with a different payment ID");
+        }
+
         if (booking.getStatus() != BookingShowSeatStatus.HELD) {
             throw new IllegalStateException("Booking is not in a payable state");
         }
@@ -100,7 +108,10 @@ public class BookingServiceImpl implements BookingService {
             throw new IllegalStateException("Booking does not own the seat");
         }
 
-        if (seat.getBookingShowSeatStatus() != BookingShowSeatStatus.HELD) {
+        if (seat.getBookingShowSeatStatus() == BookingShowSeatStatus.BOOKED) {
+            // Seat already booked, probably by this booking if it reached here
+            // Continue to ensure booking record is also updated
+        } else if (seat.getBookingShowSeatStatus() != BookingShowSeatStatus.HELD) {
             throw new IllegalStateException("Seat is not held");
         }
 
@@ -111,7 +122,7 @@ public class BookingServiceImpl implements BookingService {
         // set payment id and status on booking
         booking.setPaymentId(paymentId);
         booking.setStatus(BookingShowSeatStatus.BOOKED);
-        booking.setAmount(java.math.BigDecimal.ZERO); // optionally set amount from show
+        // Do not reset amount to ZERO, keep what was there
         bookingRepository.save(booking);
 
         // decrement show.availableSeats with optimistic retry

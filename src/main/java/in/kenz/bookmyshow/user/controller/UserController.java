@@ -9,6 +9,7 @@ import in.kenz.bookmyshow.user.entity.User;
 import in.kenz.bookmyshow.user.mapper.UserMapper;
 import in.kenz.bookmyshow.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +22,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/users")
+@Tag(name = "User Module")
 public class UserController {
 
     private final UserService userService;
@@ -88,6 +90,7 @@ public class UserController {
 
     @GetMapping("/list")
     @Operation(summary = "fetchAllUsers")
+    @Tag(name = "AppAdmin Module")
     public ResponseEntity<CommonResponse<Page<User>>> fetchAllUsers(@ParameterObject @PageableDefault(size = 1, sort = "username") Pageable pageable) {
 
         Page<User> userPage = userService.fetchAllUsers(pageable);
@@ -99,6 +102,7 @@ public class UserController {
 
     @PatchMapping("/me/deactivate/{userId}")
     @Operation(summary = "deactivateUser")
+    @Tag(name = "AppAdmin Module")
     public ResponseEntity<CommonResponse<User>> deactivateUser(@PathVariable UUID userId) {
 
         User user = userService.deactivateUser(userId);
@@ -110,6 +114,7 @@ public class UserController {
 
     @PatchMapping("/me/activate/{userId}")
     @Operation(summary = "activateUser")
+    @Tag(name = "AppAdmin Module")
     public ResponseEntity<CommonResponse<User>> activateUser(@PathVariable UUID userId) {
 
         User user = userService.activateUser(userId);
@@ -125,6 +130,7 @@ public class UserController {
 
     @DeleteMapping("/me/softdelete/{userId}")
     @Operation(summary = "softdeleteUser")
+    @Tag(name = "AppAdmin Module")
     public ResponseEntity<CommonResponse<User>> softdeleteUser(@PathVariable UUID userId) {
         User user = userService.softdeleteUser(userId);
 
@@ -135,6 +141,7 @@ public class UserController {
 
     @DeleteMapping("/me/delete/{userId}")
     @Operation(summary = "deleteUser")
+    @Tag(name = "AppAdmin Module")
     public ResponseEntity<CommonResponse<Void>> deleteUser(@PathVariable UUID userId) {
         userService.deleteUser(userId);
 
